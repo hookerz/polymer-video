@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>hook-video demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../hook-video.html">
+    <link rel="import" href="../hook-youtube-api.html">
+    <link rel="import" href="../hook-video-youtube.html">
+
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+      </style>
+    </custom-style>
+  </head>
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>Basic hook-video demo</h3>
+      <demo-snippet>
+        <template>
+          <hook-video></hook-video>
+        </template>
+      </demo-snippet>
+    </div>
+    <div class="vertical-section-container centered">
+      <h3>Basic hook-youtube-api demo</h3>
+      <demo-snippet>
+        <template>
+          <p>The YouTube API will load when the following element is placed.</p>
+          <hook-youtube-api loaded="{{loaded}}"></hook-youtube-api>
+        </template>
+      </demo-snippet>
+    </div>
+    <div class="vertical-section-container centered">
+      <h3>Basic hook-video-youtube demo. hook-video-youtube loads the YouTube API automatically.</h3>
+      <demo-snippet>
+        <template>
+          <hook-video-youtube></hook-video-youtube>
+        </template>
+      </demo-snippet>
+    </div>
+  </body>
+</html>

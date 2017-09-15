@@ -1,0 +1,37 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<script type="javascript" src="./hook-youtube-callback-mediator.js"></script>
+
+<dom-module id="hook-video">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]!</h2>
+  </template>
+
+  <script>
+    /**
+     * `hook-video`
+     * Polymer 2 video element for playing YouTube and HTML5 videos.
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class HookVideo extends Polymer.Element {
+      static get is() { return 'hook-video'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'hook-video'
+          }
+        };
+      }
+    }
+
+    window.customElements.define(HookVideo.is, HookVideo);
+  </script>
+</dom-module>

@@ -1,0 +1,81 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<script>
+  class HookYouTubeCallbackMediatorImpl {
+    constructor() {
+      this.ready = false;
+      this.originalYouTubeIframeReadyHandler = window.onYouTubeIframeAPIReady;
+      this.callbacks = [];
+      Object.defineProperty(window, 'onYouTubeIframeAPIReady', { 
+        set: (val) => {
+          this.ready = true;
+          this.pushCallback(val);
+        }, 
+        get: () => {
+          return () => {
+            this.executeCallbacks();
+          }
+        }
+      });
+    }
+    disable() {
+      delete window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = this.originalYouTubeIframeReadyHandler;
+    }
+    pushCallback(fnct) {
+      if(fnct) {
+        this.callbacks.push(fnct);
+      }
+    }
+    executeCallbacks() {
+      console.log('executing callbacks');
+      for(let i = 0; i < this.callbacks.length; i++) {
+        let callback = this.callbacks[i];
+        callback();
+      }
+      this.callbacks = null;
+    }
+  }
+  window.ytApiMediator = new HookYouTubeCallbackMediatorImpl();
+</script>
+
+<dom-module id="hook-youtube-api">
+  <template>
+    <script src="https://www.youtube.com/iframe_api"></script>
+  </template>
+  <script>
+    /**
+     * `hook-video`
+     * Polymer 2 video element for playing YouTube and HTML5 videos.
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+     class HookYouTubeApi extends Polymer.Element {
+      static get is() { return 'hook-youtube-api'; }
+      static get properties() {
+        return {
+          loaded: {
+            type: Boolean,
+            notify: true,
+            reflectToAttribute: true,
+            value: false
+          }
+        };
+      }
+      connectedCallback() {
+        super.connectedCallback();
+        if(window.ytApiMediator.ready) {
+          this.loaded = true;
+        }
+        else {
+          window.ytApiMediator.pushCallback(() => {
+            this.loaded = true;
+          });
+        }
+      }
+    }
+
+    window.customElements.define(HookYouTubeApi.is, HookYouTubeApi);
+  </script>
+</dom-module>

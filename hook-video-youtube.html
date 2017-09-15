@@ -1,0 +1,37 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="./hook-youtube-api.html">
+
+<dom-module id="hook-video-youtube">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <hook-youtube-api loaded="{{apiReady}}"></hook-youtube-api>
+    <h2>Hello [[apiReady]]!</h2>
+  </template>
+
+  <script>
+    /**
+     * `hook-video`
+     * Polymer 2 video element for playing YouTube and HTML5 videos.
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class HookVideoYouTube extends Polymer.Element {
+      static get is() { return 'hook-video-youtube'; }
+      static get properties() {
+        return {
+          apiReady: {
+            type: Boolean
+          }
+        };
+      }
+    }
+
+    window.customElements.define(HookVideoYouTube.is, HookVideoYouTube);
+  </script>
+</dom-module>
