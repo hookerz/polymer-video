@@ -1,15 +1,62 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/utils/async.html">
 <link rel="import" href="./hook-youtube-api.html">
+
 
 <dom-module id="hook-video-youtube">
   <template>
     <style>
       :host {
         display: block;
+        position: relative;
       }
+
+      :host-context([count-click]) .youtube__iframe {
+        position: relative;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 2;
+        @apply --hook-video-iframe-clickable;
+      }
+
+      .youtube__iframe {
+        @apply --hook-video-iframe;
+      }
+      
+      :host-context([count-click]) .youtube__iframe--playing {
+        opacity: 1;
+        @apply --hook-video-iframe-playing;
+      }
+
+      :host-context([count-click]) .youtube__iframe--hover {
+        @apply --hook-video-iframe-hovering;
+      }
+
+      .thumbnail {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: 0;
+        z-index: 1;
+        background-color: rgba(0,0,0,0.3);
+        @apply --hook-video-thumbnail;
+      }
+
+      .thumbnail--hovering {
+        background-color: rgba(0,0,0,0.6);
+        @apply --hook-video-thumbnail-hovering;
+      }
+      
+
     </style>
     <hook-youtube-api loaded="{{apiReady}}"></hook-youtube-api>
-    <h2>Hello [[apiReady]]!</h2>
+    <div class$="thumbnail [[computeClass(hovering, 'thumbnail--hovering')]]"></div>
+    <iframe id="player" class$="youtube__iframe [[computeClass(playing, 'youtube__iframe--playing')]] [[computeClass(paused, 'youtube__iframe--paused')]]" type="text/html" width="100%" height="100%"
+    src$="http://www.youtube.com/embed/[[src]]?enablejsapi=1&autoplay=[[autoplay]]&origin=[[origin]][[computeChromelessPlayerVars(chromeless)]]"
+    frameborder="0"></iframe>
+
   </template>
 
   <script>
@@ -26,10 +73,255 @@
       static get properties() {
         return {
           apiReady: {
-            type: Boolean
-          }
+            type: Boolean,
+            notify: true,
+            observer: 'apiReadyChanged'
+          },
+          autoplay: {
+            type: Boolean, 
+            value: false,
+            notify: true
+          },
+          countClick: {
+            type: Boolean, 
+            value: true,
+            notify: true
+          },
+          chromeless: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+          src: {
+            type: String,
+            notify: true,
+            reflectToAttribute: true,
+            observer: 'srcChanged'
+          },
+          origin: {
+            type: String,
+            value: () => { return window.location.protocol + '//' + window.location.host; }
+          },
+          state: {
+            type: Number,
+            notify: true
+          },
+          unstarted: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            computed: 'computeUnstarted(state)'
+          },
+          buffering: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            computed: 'computePlaying(state)'
+          },
+          playing: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            computed: 'computePlaying(state)'
+          },
+          paused: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            computed: 'computePaused(state)'
+          },
+          ended: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            computed: 'computeEnded(state)'
+          },
+          duration: {
+            type: Number,
+            notify: true,
+            readOnly: true,
+            computed: 'computeDuration(playing)'
+          },
+          hovering: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: false
+          },
+          currentTime: {
+            type:Number,
+            notify: true
+          },
+          /**
+          * The fraction of the bytes that have been loaded for the current video, in the range [0-1].
+          */
+          fractionLoaded: {
+            type: Number,
+            value: 0,
+            notify: true
+          },
+
+          /**
+          * Returns the player's current volume, an integer between 0 and 100.
+          * Note that `getVolume()` will return the volume even if the player is muted.
+          */
+          volume: {
+            type: Number,
+            value: 100,
+            notify: true
+          },
+
+
         };
       }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.$.player.addEventListener('mouseenter', () => {
+          this._setHovering(true);
+        });
+        this.$.player.addEventListener('mouseleave', () => {
+          this._setHovering(false);
+        });
+      }
+
+      /**
+      * Clean up the underlying Player `<iframe>` when we're removed from the DOM.
+      */
+      disconnectedCallback() {
+        if (this.player) {
+          this.player.destroy();
+        }
+      }
+
+      _onPlayerReady() {
+        console.log('_onPlayerReady');
+      }
+
+      _onPlayerStateChange(e) {
+        console.log('_onPlayerStateChange');
+        this.state = e.data;
+
+        if (this.playing && !this.__updatePlaybackStatsInterval) {
+          this.__updatePlaybackStatsInterval = setInterval(this._updatePlaybackStats.bind(this), 1000);
+        }
+        else {
+          if(this.__updatePlaybackStatsInterval) {
+            clearInterval(this.__updatePlaybackStatsInterval);
+            this.__updatePlaybackStatsInterval = undefined;
+          }
+        }
+      }
+
+      apiReadyChanged() {
+        if(this.apiReady) {
+          this.player = new YT.Player(this.$.player, {
+            events: {
+              'onReady':this._onPlayerReady.bind(this),
+              'onStateChange': this._onPlayerStateChange.bind(this)
+            }
+          });
+        }
+      }
+
+      _updatePlaybackStats() {
+        this.currentTime = Math.round(this.player.getCurrentTime());
+        this.fractionLoaded = this.player.getVideoLoadedFraction();
+        this.volume = this.player.getVolume();
+      }
+
+      computeUnstarted() {
+        if(this.state === -1) {
+          console.log('UNSTARTED');
+          return true;
+        }
+        return false;
+      }
+      computeBuffering() {
+        if(this.state === YT.PlayerState.BUFFERING) {
+          console.log('BUFFERING');
+          return true;
+        }
+        return false;
+      }
+      computePlaying() {
+        if(this.state === YT.PlayerState.PLAYING || this.state === YT.PlayerState.BUFFERING) {
+          console.log('PLAYING');
+          return true;
+        }
+        return false;
+      }
+      computePaused() {
+        if(this.state === YT.PlayerState.PAUSED) {
+          console.log('PAUSED');
+          return true;
+        }
+        return false;
+      }
+
+      computeEnded() {
+        if(this.state === YT.PlayerState.ENDED) {
+          console.log('ENDED');
+          return true;
+        }
+        return false;
+      }
+
+      computeDuration(playing) {
+        if(playing) {
+          console.log('DURATION', this.player.getDuration());
+          return this.player.getDuration();
+        }
+        return undefined;
+      }
+
+      computeChromelessPlayerVars(chromeless) {
+        if(chromeless) {
+          return '&controls=0&modestbranding=1&showinfo=0&iv_load_policy=3&rel=0';
+        }
+        return '';
+      }
+
+      computeClass(boolVal, classVal) {
+        if(boolVal) {
+          console.log('computing is true', classVal)
+          return classVal;
+        }
+        return '';
+      }
+
+      play() {
+        if(this.player) {
+          this.player.play();
+        }
+      }
+
+      pause() {
+        if(this.player) {
+          this.player.pauseVideo();
+        }
+      }
+
+      /**
+      * Skips ahead (or back) to the specified number of seconds.
+      *
+      * @method seekTo
+      * @param {number} seconds Number of seconds to seek to.
+      */
+      seekTo(seconds) {
+        if (this.player && this.player.seekTo) {
+          this.player.seekTo(seconds, true);
+          // Explicitly call _updatePlaybackStats() to ensure that the new playback info is
+          // reflected in the bound attributes.
+          // The 100ms delay is somewhat arbitrary, but the YouTube player does need time to
+          // update its internal state following the call to player.seekTo().
+          Polymer.Async.microTask.run(() => {
+            this._updatePlaybackStats();
+          });
+        }
+      }
+
+
     }
 
     window.customElements.define(HookVideoYouTube.is, HookVideoYouTube);

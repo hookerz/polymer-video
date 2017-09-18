@@ -41,9 +41,30 @@
       <h3>Basic hook-video-youtube demo. hook-video-youtube loads the YouTube API automatically.</h3>
       <demo-snippet>
         <template>
-          <hook-video-youtube></hook-video-youtube>
+          <style>
+            .youtube-test {
+              width: 640px;
+              height: 390px;
+            }
+          </style>
+          <hook-video-youtube class="youtube-test" src="mWl45NkFBOc"></hook-video-youtube>
         </template>
       </demo-snippet>
     </div>
+
+    <div class="vertical-section-container centered">
+        <h3>Chromeless &amp; count-click hook-video-youtube demo. hook-video-youtube loads the YouTube API automatically.</h3>
+        <demo-snippet>
+          <template>
+            <style>
+              .youtube-test {
+                width: 640px;
+                height: 390px;
+              }
+            </style>
+            <hook-video-youtube count-click chromeless class="youtube-test" src="mWl45NkFBOc"></hook-video-youtube>
+          </template>
+        </demo-snippet>
+      </div>
   </body>
 </html>

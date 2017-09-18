@@ -27,7 +27,6 @@
       }
     }
     executeCallbacks() {
-      console.log('executing callbacks');
       for(let i = 0; i < this.callbacks.length; i++) {
         let callback = this.callbacks[i];
         callback();
@@ -44,8 +43,8 @@
   </template>
   <script>
     /**
-     * `hook-video`
-     * Polymer 2 video element for playing YouTube and HTML5 videos.
+     * `hook-youtube-api`
+     * Polymer 2 element for loading up the YouTube iFrame API and binding it to a `ready` property.
      *
      * @customElement
      * @polymer
