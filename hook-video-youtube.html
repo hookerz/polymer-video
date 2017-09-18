@@ -41,19 +41,21 @@
         pointer-events: none;
         cursor: pointer;
         z-index: 1;
-        background-color: rgba(0,0,0,0.3);
+        background-color: #000;
+        background-size: 100% auto;
+        background-repeat: no-repeat;
+        background-position: center;
         @apply --hook-video-thumbnail;
       }
 
       .thumbnail--hovering {
-        background-color: rgba(0,0,0,0.6);
         @apply --hook-video-thumbnail-hovering;
       }
       
 
     </style>
     <hook-youtube-api loaded="{{apiReady}}"></hook-youtube-api>
-    <div class$="thumbnail [[computeClass(hovering, 'thumbnail--hovering')]]"></div>
+    <div class$="thumbnail [[computeClass(hovering, 'thumbnail--hovering')]]" style$="[[computeThumbnailStyle(thumbnail)]]"></div>
     <iframe id="player" class$="youtube__iframe [[computeClass(playing, 'youtube__iframe--playing')]] [[computeClass(paused, 'youtube__iframe--paused')]]" type="text/html" width="100%" height="100%"
     src$="http://www.youtube.com/embed/[[src]]?enablejsapi=1&autoplay=[[autoplay]]&origin=[[origin]][[computeChromelessPlayerVars(chromeless)]]"
     frameborder="0"></iframe>
@@ -106,6 +108,11 @@
           state: {
             type: Number,
             notify: true
+          },
+          thumbnail: {
+            type: String,
+            notify: true,
+            value: ''
           },
           unstarted: {
             type: Boolean,
@@ -289,6 +296,13 @@
           return classVal;
         }
         return '';
+      }
+
+      computeThumbnailStyle(thumbnail) {
+        if(!thumbnail) {
+          return "background-color: transparent;";
+        }
+        return "background-image: url(" + thumbnail + ");";
       }
 
       play() {
