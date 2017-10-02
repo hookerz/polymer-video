@@ -57,7 +57,7 @@
     <hook-youtube-api loaded="{{apiReady}}"></hook-youtube-api>
     <div class$="thumbnail [[computeClass(hovering, 'thumbnail--hovering')]]" style$="[[computeThumbnailStyle(thumbnail)]]"></div>
     <iframe id="player" class$="youtube__iframe [[computeClass(playing, 'youtube__iframe--playing')]] [[computeClass(paused, 'youtube__iframe--paused')]]" type="text/html" width="100%" height="100%"
-    src$="http://www.youtube.com/embed/[[src]]?enablejsapi=1&autoplay=[[autoplay]]&origin=[[origin]][[computeChromelessPlayerVars(chromeless)]]"
+    src$="//www.youtube.com/embed/[[src]]?enablejsapi=1&autoplay=[[autoplay]]&origin=[[origin]][[computeChromelessPlayerVars(chromeless)]]"
     frameborder="0"></iframe>
 
   </template>
