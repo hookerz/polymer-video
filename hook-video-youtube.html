@@ -119,6 +119,10 @@
       static get is() { return 'hook-video-youtube'; }
       static get properties() {
         return {
+          debug: {
+            type: Boolean,
+            value: false
+          },
           apiReady: {
             type: Boolean,
             notify: true,
@@ -269,14 +273,21 @@
       }
 
       _playerClicked(e) {
+        if(this.debug) {
+          console.log('hook-video-youtube._playerClicked()');
+        }
         this.play();
       }
 
       _onPlayerReady() {
-        console.log('_onPlayerReady');
+        if(this.debug) {
+          console.log('hook-video-youtube._onPlayerReady()');
+        }
 
         this.addEventListener('mouseenter', () => {
-          console.log('hovering');
+          if(this.debug) {
+            console.log('hook-video-youtube.hovering');
+          }
           this._setHovering(true);
         });
         this.addEventListener('mouseleave', () => {
@@ -287,7 +298,9 @@
       }
 
       _onPlayerStateChange(e) {
-        console.log('_onPlayerStateChange');
+        if(this.debug) {
+          console.log('hook-video-youtube._onPlayerStateChange()');
+        }
         this.state = e.data;
 
         if (this.playing && !this.__updatePlaybackStatsInterval) {
@@ -302,6 +315,9 @@
       }
 
       apiReadyChanged() {
+        if(this.debug) {
+          console.log('hook-video-youtube.apiReadyChanged()');
+        }
         if(this.apiReady) {
           this.player = new YT.Player(this.$.player, {
             events: {
@@ -320,35 +336,45 @@
 
       computeUnstarted() {
         if(this.state === -1) {
-          console.log('UNSTARTED');
+          if(this.debug) {
+            console.log('hook-video-youtube.UNSTARTED');
+          }
           return true;
         }
         return false;
       }
       computeBuffering() {
         if(this.state === YT.PlayerState.BUFFERING) {
-          console.log('BUFFERING');
+          if(this.debug) {
+            console.log('hook-video-youtube.BUFFERING');
+          }
           return true;
         }
         return false;
       }
       computePlaying() {
         if(this.state === YT.PlayerState.PLAYING) {
-          console.log('PLAYING');
+          if(this.debug) {
+            console.log('hook-video-youtube.PLAYING');
+          }
           return true;
         }
         return false;
       }
       computeNotPlaying() {
         if(this.state !== YT.PlayerState.PLAYING) {
-          console.log('NOT PLAYING');
+          if(this.debug) {
+            console.log('hook-video-youtube.NOT PLAYING');
+          }
           return true;
         }
         return false;
       }
       computePaused() {
         if(this.state === YT.PlayerState.PAUSED) {
-          console.log('PAUSED');
+          if(this.debug) {
+            console.log('hook-video-youtube.PAUSED');
+          }
           return true;
         }
         return false;
@@ -356,7 +382,9 @@
 
       computeEnded() {
         if(this.state === YT.PlayerState.ENDED) {
-          console.log('ENDED');
+          if(this.debug) {
+            console.log('hook-video-youtube.ENDED');
+          }
           return true;
         }
         return false;
@@ -364,7 +392,9 @@
 
       computeDuration(playing) {
         if(playing) {
-          console.log('DURATION', this.player.getDuration());
+          if(this.debug) {
+            console.log('hook-video-youtube.DURATION', this.player.getDuration());
+          }
           return this.player.getDuration();
         }
         return undefined;
@@ -379,7 +409,6 @@
 
       computeClass(boolVal, classVal) {
         if(boolVal) {
-          console.log('computing is true', classVal)
           return classVal;
         }
         return '';
@@ -393,14 +422,47 @@
       }
 
       play() {
+        if(this.debug) {
+          console.log('hook-video-youtube.play()');
+        }
         if(this.player) {
           this.player.play();
         }
       }
 
       pause() {
+        if(this.debug) {
+          console.log('hook-video-youtube.pause()');
+        }
         if(this.player) {
           this.player.pauseVideo();
+        }
+      }
+
+      stop() {
+        if(this.debug) {
+          console.log('hook-video-youtube.stop()');
+        }
+        if(this.player) {
+          this.player.stopVideo();
+        }
+      }
+
+      mute() {
+        if(this.debug) {
+          console.log('hook-video-youtube.mute()');
+        }
+        if(this.player) {
+          this.player.mute();
+        }
+      }
+
+      unmute() {
+        if(this.debug) {
+          console.log('hook-video-youtube.unmute()');
+        }
+        if(this.player) {
+          this.player.unmute();
         }
       }
 
@@ -411,6 +473,9 @@
       * @param {number} seconds Number of seconds to seek to.
       */
       seekTo(seconds) {
+        if(this.debug) {
+          console.log('hook-video-youtube.seekTo()', seconds);
+        }
         if (this.player && this.player.seekTo) {
           this.player.seekTo(seconds, true);
           // Explicitly call _updatePlaybackStats() to ensure that the new playback info is
