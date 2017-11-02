@@ -132,7 +132,8 @@
           countClick: {
             type: Boolean, 
             value: false,
-            notify: true
+            notify: true,
+            observer: 'countClickChanged'
           },
           chromeless: {
             type: Boolean,
@@ -240,6 +241,11 @@
         };
       }
 
+      constructor() {
+        super();
+        this.__playerClicked = this._playerClicked.bind(this);
+      }
+
       connectedCallback() {
         super.connectedCallback();
       }
@@ -251,6 +257,19 @@
         if (this.player) {
           this.player.destroy();
         }
+      }
+
+      countClickChanged(val) {
+        if(val) {
+          this.removeEventListener('click', this.__playerClicked);
+        }
+        else {
+          this.addEventListener('click', this.__playerClicked);
+        }
+      }
+
+      _playerClicked(e) {
+        this.play();
       }
 
       _onPlayerReady() {
