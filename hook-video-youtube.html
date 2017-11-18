@@ -151,6 +151,11 @@
             notify: true,
             observer: 'apiReadyChanged'
           },
+          playerReady: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
           autoplay: {
             type: Boolean, 
             value: false,
@@ -176,6 +181,15 @@
           origin: {
             type: String,
             value: () => { return window.location.protocol + '//' + window.location.host; }
+          },
+          preload: {
+            type: Boolean,
+            notify: true,
+            value: true
+          },
+          waitingToPlay: {
+            type: Boolean,
+            value: false
           },
           state: {
             type: Number,
@@ -275,6 +289,20 @@
 
       connectedCallback() {
         super.connectedCallback();
+
+        if(!this.preload) {
+
+          this.addEventListener('mouseenter', () => { 
+            if(this.debug) { 
+              console.log('hook-video-youtube.hovering'); 
+            } 
+            this._setHovering(true); 
+          }); 
+          this.addEventListener('mouseleave', () => { 
+            this._setHovering(false); 
+          }); 
+  
+        }
       }
 
       /**
@@ -299,7 +327,19 @@
         if(this.debug) {
           console.log('hook-video-youtube._playerClicked()');
         }
-        this.play();
+        if(!this.preload) {
+          this.waitingToPlay = true;
+          this.player = new YT.Player(this.$.player, {
+            events: {
+              'onReady':this._onPlayerReady.bind(this),
+              'onStateChange': this._onPlayerStateChange.bind(this)
+            }
+          });
+        }
+        else {
+          this.play();
+        }
+        
       }
 
       _onPlayerReady() {
@@ -307,17 +347,23 @@
           console.log('hook-video-youtube._onPlayerReady()');
         }
 
-        this.addEventListener('mouseenter', () => {
-          if(this.debug) {
-            console.log('hook-video-youtube.hovering');
-          }
-          this._setHovering(true);
-        });
-        this.addEventListener('mouseleave', () => {
-          this._setHovering(false);
-        });
+        if(this.preload) {
+          this.addEventListener('mouseenter', () => { 
+            if(this.debug) { 
+              console.log('hook-video-youtube.hovering'); 
+            } 
+            this._setHovering(true); 
+          }); 
+          this.addEventListener('mouseleave', () => { 
+            this._setHovering(false); 
+          }); 
+        }
 
-        console.log(this);
+        this.playerReady = true;
+        if(this.waitingToPlay) {
+          this.waitingToPlay = false;
+          this.play();
+        }
       }
 
       _onPlayerStateChange(e) {
@@ -341,7 +387,7 @@
         if(this.debug) {
           console.log('hook-video-youtube.apiReadyChanged()');
         }
-        if(this.apiReady) {
+        if(this.apiReady && this.preload) {
           this.player = new YT.Player(this.$.player, {
             events: {
               'onReady':this._onPlayerReady.bind(this),
