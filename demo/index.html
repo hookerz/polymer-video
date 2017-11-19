@@ -70,5 +70,35 @@
       </demo-snippet>
     </div>
 
+    <div class="vertical-section-container centered">
+      <h3>Thumbnail test.</h3>
+      <demo-snippet>
+        <template>
+          <style>
+            .youtube-test {
+              width: 640px;
+              height: 390px;
+            }
+          </style>
+          <hook-video-youtube yt-modestbranding class="youtube-test" src="tr7I4vokl78" thumbnail="https://i.ytimg.com/vi_webp/CJxUSDS7dqQ/maxresdefault.webp"></hook-video-youtube>
+        </template>
+      </demo-snippet>
+    </div>
+
+    <div class="vertical-section-container centered">
+      <h3>Preload disabled.</h3>
+      <demo-snippet>
+        <template>
+          <style>
+            .youtube-test {
+              width: 640px;
+              height: 390px;
+            }
+          </style>
+          <hook-video-youtube debug nopreload chromeless class="youtube-test" src="tr7I4vokl78" thumbnail="https://i.ytimg.com/vi_webp/CJxUSDS7dqQ/maxresdefault.webp"></hook-video-youtube>
+        </template>
+      </demo-snippet>
+    </div>
+
   </body>
 </html>
