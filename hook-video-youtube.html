@@ -11,39 +11,37 @@
         position: relative;
       }
 
-      :host-context([count-click]) .youtube__iframe {
-        position: relative;
-        opacity: 0;
-        cursor: pointer;
-        z-index: 2;
-        @apply --hook-video-iframe-clickable;
+      .youtube__container {
+        width: 100%;
+        height: 100%;
+        @apply --hook-video-container;
       }
 
       .youtube__iframe {
+        width: 100%;
+        height: 100%;
         @apply --hook-video-iframe;
       }
-      
-      :host-context([count-click]) .youtube__iframe--playing {
-        opacity: 1;
-        @apply --hook-video-iframe-playing;
+
+      .youtube__iframe--unstarted {
       }
 
-      :host-context([count-click]) .youtube__iframe--paused {
-        opacity: 0;
-        @apply --hook-video-iframe-paused;
+      .youtube__iframe--ended {
       }
 
-      :host-context([count-click]) .youtube__iframe--hover {
-        @apply --hook-video-iframe-hovering;
+      .youtube__iframe--buffering {
+      }
+
+      .youtube__iframe--playing {
       }
 
       .thumbnail {
         position: absolute;
-        display: none;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
+        display: none;
         cursor: pointer;
         z-index: 1;
         background-color: #000;
@@ -52,7 +50,7 @@
         background-position: center center;
         @apply --hook-video-thumbnail;
       }
-
+      
       .thumbnail--hovering {
         @apply --hook-video-thumbnail-hovering;
       }
@@ -75,57 +73,39 @@
         transition: fill .1s cubic-bezier(0.0, 0.0, 0.2, 1), fill-opacity .1s cubic-bezier(0.0, 0.0, 0.2, 1);
       }
 
-      .youtube__iframe--unstarted {
-        visibility: hidden;
-      }
-
-      .youtube__iframe--ended {
-        visibility: hidden;
-      }
-
-      .youtube__iframe--buffering {
-        visibility: visible;
-      }
-
-      .youtube__iframe--playing {
-        visibility: visible;
-      }
-
       .thumbnail__icon--hovering .ytp-large-play-button-bg {
         fill: #f00;
         fill-opacity: 1;
       }
 
       .thumbnail--paused {
-        display: none;
+        @apply --hook-video-thumbnail-paused;
       }
       
       .thumbnail--ended {
-        display: block;
         @apply --hook-video-thumbnail-ended;
       }
 
       .thumbnail--playing {
-        display: none;
-        @apply --hook-video-thumbnail-ended;
+        @apply --hook-video-thumbnail-playing;
       }
 
       .thumbnail--unstarted {
         display: block;
         @apply --hook-video-thumbnail-unstarted;
       }
-      
+
     </style>
     <hook-youtube-api loaded="{{apiReady}}"></hook-youtube-api>
-    <div class$="thumbnail [[computeClass(countClick, 'thumbnail--notclickable')]] [[computeClass(ended, 'thumbnail--ended')]] [[computeClass(unstarted, 'thumbnail--unstarted')]] [[computeClass(playing, 'thumbnail--playing')]] [[computeClass(hovering, 'thumbnail--hovering')]]" style$="[[computeThumbnailStyle(thumbnail)]]">
+    <div class$="thumbnail [[computeClass(playing, 'thumbnail--playing')]] [[computeClass(paused, 'thumbnail--paused')]] [[computeClass(unstarted, 'thumbnail--unstarted')]] [[computeClass(ended, 'thumbnail--ended')]] [[computeClass(hovering, 'thumbnail--hovering')]]" style$="[[computeThumbnailStyle(thumbnail)]]">
       <svg class$="thumbnail__icon [[computeClass(hovering, 'thumbnail__icon--hovering')]]" height="100%" version="1.1" viewBox="0 0 68 48" width="100%">
         <path class="ytp-large-play-button-bg" d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z" fill="#212121" fill-opacity="0.8"></path>
         <path d="M 45,24 27,14 27,34" fill="#fff"></path>
       </svg>
     </div>
-    <iframe id="player" class$="youtube__iframe [[computeClass(buffering, 'youtube__iframe--buffering')]] [[computeClass(ended, 'youtube__iframe--ended')]] [[computeClass(unstarted, 'youtube__iframe--unstarted')]] [[computeClass(playing, 'youtube__iframe--playing')]] [[computeClass(paused, 'youtube__iframe--paused')]]" type="text/html" width="100%" height="100%"
-    src$="//www.youtube.com/embed/[[src]]?enablejsapi=1&autoplay=[[autoplay]]&origin=[[origin]][[computeChromelessPlayerVars(chromeless)]]" frameborder="0"></iframe>
-
+    <div id="youtube-container" class$="youtube__container [[computeClass(playing, 'youtube__iframe--playing')]] [[computeClass(paused, 'youtube__iframe--paused')]]">
+      <div id="player" class="youtube__iframe"></div>
+    </div>
   </template>
 
   <script>
@@ -156,36 +136,15 @@
             value: false,
             notify: true
           },
-          autoplay: {
-            type: Boolean, 
-            value: false,
-            notify: true
-          },
-          countClick: {
-            type: Boolean, 
-            value: false,
-            notify: true,
-            observer: 'countClickChanged'
-          },
-          chromeless: {
-            type: Boolean,
-            value: false,
-            notify: true
-          },
           src: {
             type: String,
             notify: true,
-            reflectToAttribute: true,
-            observer: 'srcChanged'
+            reflectToAttribute: true
           },
-          origin: {
-            type: String,
-            value: () => { return window.location.protocol + '//' + window.location.host; }
-          },
-          preload: {
+          nopreload: {
             type: Boolean,
             notify: true,
-            value: true
+            value: false
           },
           waitingToPlay: {
             type: Boolean,
@@ -254,6 +213,7 @@
             readOnly: true,
             value: false,
             reflectToAttribute: true,
+            observer: '_hoveringChanged'
           },
           currentTime: {
             type:Number,
@@ -269,6 +229,22 @@
           },
 
           /**
+          * If the player stops, reset and destroy the player after a period of no interaction.
+          */
+          autoTimeout: {
+            type: Boolean,
+            value: true
+          },
+
+          /**
+          * The timeout duration before the player is destroyed when there is no interaction.
+          */
+          timeoutDuration: {
+            type: Number,
+            value: 5000
+          },
+
+          /**
           * Returns the player's current volume, an integer between 0 and 100.
           * Note that `getVolume()` will return the volume even if the player is muted.
           */
@@ -278,19 +254,130 @@
             notify: true
           },
 
+          _vars: {
+            type:Object,
+            computed: '_computeVars(vars, ytColor, ytCcloadpolicy, ytControls, ytDisablekb, ytIvLoadPolicy, ytLoop, ytModestbranding, ytOrigin, ytPlaysinline, ytRel, ytShowinfo, ytStart)'
+          },
+
+          /**
+          * Passed into the YouTube constructor. This object gets merged on top of the properties. It takes precedence.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          vars: {
+            type: Object,
+            notify: true,
+            value: () => { 
+              return {}; 
+            }
+          },
+
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytColor: {
+            type: String
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytCcloadpolicy: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytControls: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytDisablekb: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytIvLoadPolicy: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytLoop: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytModestbranding: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytOrigin: {
+            type: String,
+            value: () => { return window.location.protocol + '//' + window.location.host; }
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytPlaysinline: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytRel: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytShowinfo: {
+            type: Number
+          },
+          /**
+          * Passed into the YouTube constructor.
+          * @see {@link https://developers.google.com/youtube/player_parameters#Parameters|YouTube Player Parameters}
+          */
+          ytStart: {
+            type: Number
+          }
 
         };
       }
 
+      static get observers() {
+        return ['srcChanged(src, apiReady, nopreload)'];
+      }
+
       constructor() {
         super();
+        this.__onPlayerError = this._onPlayerError.bind(this);
+        this.__onPlayerReady = this._onPlayerReady.bind(this);
+        this.__onPlayerStateChange = this._onPlayerStateChange.bind(this);
         this.__playerClicked = this._playerClicked.bind(this);
       }
 
       connectedCallback() {
         super.connectedCallback();
 
-        if(!this.preload) {
+        this.addEventListener('click', this.__playerClicked);
+
+        if(this.nopreload) {
 
           this.addEventListener('mouseenter', () => { 
             if(this.debug) { 
@@ -309,37 +396,71 @@
       * Clean up the underlying Player `<iframe>` when we're removed from the DOM.
       */
       disconnectedCallback() {
-        if (this.player) {
-          this.player.destroy();
-        }
-      }
-
-      countClickChanged(val) {
-        if(val) {
-          this.removeEventListener('click', this.__playerClicked);
-        }
-        else {
-          this.addEventListener('click', this.__playerClicked);
-        }
+        this._destroyPlayer();
       }
 
       _playerClicked(e) {
         if(this.debug) {
           console.log('hook-video-youtube._playerClicked()');
         }
-        if(!this.preload) {
+        if(this.nopreload) {
+          this._createPlayer();
           this.waitingToPlay = true;
-          this.player = new YT.Player(this.$.player, {
-            events: {
-              'onReady':this._onPlayerReady.bind(this),
-              'onStateChange': this._onPlayerStateChange.bind(this)
-            }
-          });
         }
         else {
-          this.play();
+          if(!this.playerReady) {
+            this.waitingToPlay = true;
+          }
+          else {
+            this.play();
+          }
         }
         
+      }
+
+      srcChanged(src, apiReady, nopreload) {
+        if(this.debug) {
+          console.log('hook-video-youtube.srcChanged()', src, apiReady, nopreload);
+        }
+        if(!apiReady || nopreload) {
+          return;
+        }
+        this._destroyPlayer();
+        this._createPlayer();
+      }
+
+      _destroyPlayer() {
+        if(this.debug) {
+          console.log('hook-video-youtube._destroyPlayer()');
+        }
+        if(this.player) {
+          this.player.destroy();
+          this.player = null;
+        }
+        this.playerReady = false;
+      }
+
+      _createPlayer() {
+        if(this.debug) {
+          console.log('hook-video-youtube._createPlayer()');
+        }
+        this.playerReady = false;
+        this.waitingToPlay = false;
+        this.player = new YT.Player(this.shadowRoot.querySelector('#player'), {
+          videoId: this.src,
+          playerVars: this._vars,
+          events: {
+            onError: this.__onPlayerError,
+            onReady: this.__onPlayerReady,
+            onStateChange: this.__onPlayerStateChange
+          }
+        });
+      }
+
+      _onPlayerError(e) {
+        if(this.debug) {
+          console.error('hook-video-youtube.__onPlayerError()', e);
+        }
       }
 
       _onPlayerReady() {
@@ -347,7 +468,7 @@
           console.log('hook-video-youtube._onPlayerReady()');
         }
 
-        if(this.preload) {
+        if(!this.nopreload) {
           this.addEventListener('mouseenter', () => { 
             if(this.debug) { 
               console.log('hook-video-youtube.hovering'); 
@@ -387,14 +508,6 @@
         if(this.debug) {
           console.log('hook-video-youtube.apiReadyChanged()');
         }
-        if(this.apiReady && this.preload) {
-          this.player = new YT.Player(this.$.player, {
-            events: {
-              'onReady':this._onPlayerReady.bind(this),
-              'onStateChange': this._onPlayerStateChange.bind(this)
-            }
-          });
-        }
       }
 
       _updatePlaybackStats() {
@@ -412,15 +525,13 @@
         }
         return false;
       }
+
       computeBuffering() {
         if(this.state === YT.PlayerState.BUFFERING) {
           if(this.debug) {
             console.log('hook-video-youtube.BUFFERING');
           }
-          if(this._debounceJob) {
-            this._debounceJob.cancel();
-            this._debounceJob = null;
-          }
+          this._cancelTimeout();
           return true;
         }
         return false;
@@ -441,10 +552,7 @@
           }
           return true;
         }
-        if(this._debounceJob) {
-          this._debounceJob.cancel();
-          this._debounceJob = null;
-        }
+        this._cancelTimeout();
         return false;
       }
       computePaused() {
@@ -452,7 +560,7 @@
           if(this.debug) {
             console.log('hook-video-youtube.PAUSED');
           }
-          this._debounceJob = Polymer.Debouncer.debounce(this._debounceJob, Polymer.Async.timeOut.after(5000), () => { this._idleTimeout(); });
+          this._startTimeout();
           return true;
         }
         return false;
@@ -476,13 +584,6 @@
           return this.player.getDuration();
         }
         return undefined;
-      }
-
-      computeChromelessPlayerVars(chromeless) {
-        if(chromeless) {
-          return '&controls=0&modestbranding=1&showinfo=0&iv_load_policy=3&rel=0';
-        }
-        return '';
       }
 
       computeClass(boolVal, classVal) {
@@ -514,10 +615,7 @@
         }
         if(this.player) {
           this.player.pauseVideo();
-          if(this._debounceJob) {
-            this._debounceJob.cancel();
-            this._debounceJob = null;
-          }
+          this._cancelTimeout();
         }
       }
 
@@ -527,10 +625,7 @@
         }
         if(this.player && (this.playing || this.paused)) {
           this.player.stopVideo();
-          if(this._debounceJob) {
-            this._debounceJob.cancel();
-            this._debounceJob = null;
-          }
+          this._cancelTimeout();
         }
       }
 
@@ -553,7 +648,12 @@
       }
 
       _idleTimeout() {
+        console.log('hook-video-youtube._idleTimeout()');
         this.stop();
+        if(this.nopreload) {
+          this._destroyPlayer();
+          this.state = -1;
+        }
       }
 
       /**
@@ -576,6 +676,49 @@
             this._updatePlaybackStats();
           });
         }
+      }
+
+      _startTimeout() {
+        if(this.autoTimeout) {
+          this._debounceJob = Polymer.Debouncer.debounce(this._debounceJob, Polymer.Async.timeOut.after(this.timeoutDuration), () => { this._idleTimeout(); });
+        }
+      }
+
+      _cancelTimeout() {
+        if(this._debounceJob) {
+          this._debounceJob.cancel();
+          this._debounceJob = null;
+        }
+      }
+
+      _hoveringChanged(hovering) {
+        if(this.hovering) {
+          this._cancelTimeout();
+        }
+        else {
+          if(this.unstarted || this.paused || this.ended) {
+            this._startTimeout();
+          }
+        }
+      }
+
+      _computeVars(vars, ytColor, ytCcloadpolicy, ytControls, ytDisablekb, ytIvLoadPolicy, ytLoop, ytModestbranding, ytOrigin, ytPlaysinline, ytRel, ytShowinfo, ytStart) {
+        var obj = {
+          cc_load_policy: ytCcloadpolicy,
+          color: ytColor,
+          controls: ytControls,
+          disablekb: ytDisablekb,
+          iv_load_policy: ytIvLoadPolicy,
+          loop: ytLoop,
+          modestbranding: ytModestbranding,
+          origin: ytOrigin,
+          playsinline: ytPlaysinline,
+          rel: ytRel,
+          showinfo: ytShowinfo,
+          start: ytStart
+        };
+        Object.assign(obj, vars);
+        return obj;
       }
 
 
