@@ -403,19 +403,7 @@
         if(this.debug) {
           console.log('hook-video-youtube._playerClicked()');
         }
-        if(this.nopreload) {
-          this._createPlayer();
-          this.waitingToPlay = true;
-        }
-        else {
-          if(!this.playerReady) {
-            this.waitingToPlay = true;
-          }
-          else {
-            this.play();
-          }
-        }
-        
+        this.play();
       }
 
       srcChanged(src, apiReady, nopreload) {
@@ -604,8 +592,17 @@
         if(this.debug) {
           console.log('hook-video-youtube.play()');
         }
-        if(this.player) {
-          this.player.playVideo();
+        if(this.nopreload) {
+          this._createPlayer();
+          this.waitingToPlay = true;
+        }
+        else {
+          if(!this.playerReady) {
+            this.waitingToPlay = true;
+          }
+          else {
+            this.player.playVideo();
+          }
         }
       }
 
