@@ -433,7 +433,6 @@
           console.log('hook-video-youtube._createPlayer()');
         }
         this.playerReady = false;
-        this.waitingToPlay = false;
         this.player = new YT.Player(this.shadowRoot.querySelector('#player'), {
           videoId: this.src,
           playerVars: this._vars,
@@ -470,8 +469,8 @@
 
         this.playerReady = true;
         if(this.waitingToPlay) {
-          this.waitingToPlay = false;
           this.play();
+          this.waitingToPlay = false;
         }
       }
 
@@ -495,6 +494,9 @@
       apiReadyChanged() {
         if(this.debug) {
           console.log('hook-video-youtube.apiReadyChanged()');
+        }
+        if(this.waitingToPlay) {
+          this.play();
         }
       }
 
@@ -592,9 +594,13 @@
         if(this.debug) {
           console.log('hook-video-youtube.play()');
         }
-        if(this.nopreload) {
-          this._createPlayer();
+        if(!this.apiReady) {
           this.waitingToPlay = true;
+          return;
+        }
+        if(this.nopreload && !this.playerReady) {
+          this.waitingToPlay = true;
+          this._createPlayer();
         }
         else {
           if(!this.playerReady) {
@@ -676,7 +682,7 @@
       }
 
       _startTimeout() {
-        if(this.autoTimeout) {
+        if(this.autoTimeout && this.playerReady) {
           this._debounceJob = Polymer.Debouncer.debounce(this._debounceJob, Polymer.Async.timeOut.after(this.timeoutDuration), () => { this._idleTimeout(); });
         }
       }
