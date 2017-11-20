@@ -600,6 +600,7 @@
         }
         if(this.nopreload && !this.playerReady) {
           this.waitingToPlay = true;
+          this._destroyPlayer();
           this._createPlayer();
         }
         else {
