@@ -95,8 +95,12 @@
               height: 390px;
             }
           </style>
-          <hook-video-youtube debug nopreload chromeless class="youtube-test" src="tr7I4vokl78" thumbnail="https://i.ytimg.com/vi_webp/CJxUSDS7dqQ/maxresdefault.webp"></hook-video-youtube>
+          <hook-video-youtube id="autoplayTest" debug nopreload chromeless class="youtube-test" src="tr7I4vokl78" thumbnail="https://i.ytimg.com/vi_webp/CJxUSDS7dqQ/maxresdefault.webp"></hook-video-youtube>
         </template>
+        <script>
+          var element = document.querySelector('#autoplayTest');
+          element.play();
+        </script>
       </demo-snippet>
     </div>
 
