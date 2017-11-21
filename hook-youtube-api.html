@@ -20,6 +20,12 @@
           }
         }
       });
+      this.createYouTubeScript();
+    }
+    createYouTubeScript() {
+      var script = document.createElement('script');
+      script.src = 'https://www.youtube.com/iframe_api';
+      document.body.appendChild(script);
     }
     disable() {
       delete window.onYouTubeIframeAPIReady;
@@ -44,7 +50,7 @@
   }
   window.ytApiMediator = new HookYouTubeCallbackMediatorImpl();
 </script>
-<script src="https://www.youtube.com/iframe_api"></script>
+
 
 <dom-module id="hook-youtube-api">
   <template>
