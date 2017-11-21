@@ -8,13 +8,11 @@
       this.callbacks = [];
       Object.defineProperty(window, 'onYouTubeIframeAPIReady', { 
         set: (val) => {
-          console.log('HookYouTubeCallbackMediatorImpl.onYouTubeIframeAPIReady()');
           this.ready = true;
           this.pushCallback(val);
         }, 
         get: () => {
           return () => {
-            console.log('HookYouTubeCallbackMediatorImpl.onYouTubeIframeAPIReady() executed');
             this.executeCallbacks();
             this.loaded = true;
           }
@@ -77,15 +75,12 @@
         };
       }
       connectedCallback() {
-        console.log('HookYouTubeApi.connectedCallback()');
         super.connectedCallback();
         if(window.ytApiMediator.ready) {
-          console.log('HookYouTubeApi.connectedCallback() ready');
           this.loaded = true;
         }
         else {
           window.ytApiMediator.pushCallback(() => {
-            console.log('HookYouTubeApi.connectedCallback() callback()');
             this.loaded = true;
           });
         }
