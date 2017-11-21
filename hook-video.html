@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer-element.html">
-<script type="javascript" src="./hook-youtube-callback-mediator.js"></script>
+<script type="javascript" src="./hook-callback-mediator.js"></script>
 
 <dom-module id="hook-video">
   <template>
@@ -7,8 +7,28 @@
       :host {
         display: block;
       }
+      .video {
+        width: 100%;
+        height: 100%;
+      }
     </style>
-    <h2>Hello [[prop1]]!</h2>
+    <video class="video" 
+      id="video" 
+      autoplay$="[[autoplay]]" 
+      controls$="[[controls]]" 
+      muted$="[[muted]]" 
+      playsinline$="[[playsinline]]" 
+      loop$="[[loop]]"
+      current-time="{{currentTime:timeupdate}}"
+      volume="{{volume:volumechange}}"
+      on-durationchange="_durationChanged"
+      on-playing="_playingChanged"
+      on-waiting="_waitingChanged"
+      on-ended="_endedChanged"
+      on-pause="_pauseChanged"
+      >
+      <slot></slot>
+    </video>
   </template>
 
   <script>
@@ -21,15 +41,210 @@
      * @demo demo/index.html
      */
     class HookVideo extends Polymer.Element {
+
       static get is() { return 'hook-video'; }
+
       static get properties() {
         return {
-          prop1: {
-            type: String,
-            value: 'hook-video'
-          }
+          autoplay: {
+            type: Boolean,
+            value: false
+          },
+          muted: {
+            type: Boolean,
+            value: false
+          },
+          playsinline: {
+            type: Boolean,
+            value: false
+          },
+          loop: {
+            type: Boolean,
+            value: false
+          },
+          controls: {
+            type: Boolean,
+            value: false
+          },
+          /**
+          * -1 – unstarted
+          * 0 – ended
+          * 1 – playing
+          * 2 – paused
+          * 3 – buffering
+          */
+          state: {
+            type: Number,
+            notify: true,
+          },
+          unstarted: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: true,
+            computed: 'computeUnstarted(state)'
+          },
+          buffering: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: false,
+            computed: 'computePlaying(state)'
+          },
+          playing: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: false,
+            computed: 'computePlaying(state)'
+          },
+          notplaying: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: true,
+            computed: 'computeNotPlaying(state)'
+          },
+          paused: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: false,
+            computed: 'computePaused(state)'
+          },
+          ended: {
+            type: Boolean,
+            notify: true,
+            readOnly: true,
+            value: false,
+            computed: 'computeEnded(state)'
+          },
+          duration: {
+            type: Number,
+            notify: true,
+            readOnly: true
+          },
+          currentTime: {
+            type: Number,
+            notify: true
+          },
+          volume: {
+            type: Number,
+            notify: true
+          },
         };
       }
+
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+
+      _videoStarted() {
+      }
+
+      _videoEnded() {
+        this.playing = false;
+        this.ended = true;
+      }
+
+
+      computeUnstarted(state) {
+        if(state === -1 || state === 5) {
+          if(this.debug) {
+            console.log('hook-video.UNSTARTED');
+          }
+          return true;
+        }
+        return false;
+      }
+
+      computeBuffering() {
+        if(this.state === 3) {
+          if(this.debug) {
+            console.log('hook-video.BUFFERING');
+          }
+          this._cancelTimeout();
+          return true;
+        }
+        return false;
+      }
+      computePlaying() {
+        if(this.state === 1) {
+          if(this.debug) {
+            console.log('hook-video.PLAYING');
+          }
+          return true;
+        }
+        return false;
+      }
+      computeNotPlaying() {
+        if(this.state !== 1) {
+          if(this.debug) {
+            console.log('hook-video.NOT PLAYING');
+          }
+          return true;
+        }
+        this._cancelTimeout();
+        return false;
+      }
+      computePaused() {
+        if(this.state === 2) {
+          if(this.debug) {
+            console.log('hook-video.PAUSED');
+          }
+          this._startTimeout();
+          return true;
+        }
+        return false;
+      }
+
+      computeEnded() {
+        if(this.state === 0) {
+          if(this.debug) {
+            console.log('hook-video.ENDED');
+          }
+          return true;
+        }
+        return false;
+      }
+
+      _durationChanged(e) {
+        this._setDuration(this.$.video.duration);
+      }
+
+      _currentTimeChanged(e) {
+        this._setCurrentTime(this.$.video.currentTime);
+      }
+
+      _playingChanged(e) {
+        this.state = 1;
+      }
+
+      _waitingChanged(e) {
+        this.state = 3;
+      }
+
+      _endedChanged(e) {
+        this.state = 0;
+      }
+
+      _pauseChanged(e) {
+        this.state = 2;
+      }
+
+
+      play() {
+        this.$.video.play();
+      }
+
+      pause() {
+        this.$.video.pause();
+      }
+
     }
 
     window.customElements.define(HookVideo.is, HookVideo);
