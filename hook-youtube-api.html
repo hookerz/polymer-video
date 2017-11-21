@@ -8,11 +8,13 @@
       this.callbacks = [];
       Object.defineProperty(window, 'onYouTubeIframeAPIReady', { 
         set: (val) => {
+          console.log('HookYouTubeCallbackMediatorImpl.onYouTubeIframeAPIReady()');
           this.ready = true;
           this.pushCallback(val);
         }, 
         get: () => {
           return () => {
+            console.log('HookYouTubeCallbackMediatorImpl.onYouTubeIframeAPIReady() executed');
             this.executeCallbacks();
             this.loaded = true;
           }
@@ -42,10 +44,10 @@
   }
   window.ytApiMediator = new HookYouTubeCallbackMediatorImpl();
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 
 <dom-module id="hook-youtube-api">
   <template>
-    <script src="https://www.youtube.com/iframe_api"></script>
   </template>
   <script>
     /**
@@ -69,12 +71,15 @@
         };
       }
       connectedCallback() {
+        console.log('HookYouTubeApi.connectedCallback()');
         super.connectedCallback();
         if(window.ytApiMediator.ready) {
+          console.log('HookYouTubeApi.connectedCallback() ready');
           this.loaded = true;
         }
         else {
           window.ytApiMediator.pushCallback(() => {
+            console.log('HookYouTubeApi.connectedCallback() callback()');
             this.loaded = true;
           });
         }

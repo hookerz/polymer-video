@@ -493,7 +493,7 @@
 
       apiReadyChanged() {
         if(this.debug) {
-          console.log('hook-video-youtube.apiReadyChanged()');
+          console.log('hook-video-youtube.apiReadyChanged()', this.apiReady);
         }
         if(this.waitingToPlay) {
           this.play();

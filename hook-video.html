@@ -17,6 +17,7 @@
       autoplay$="[[autoplay]]" 
       controls$="[[controls]]" 
       muted$="[[muted]]" 
+      src$="[[src]]"
       playsinline$="[[playsinline]]" 
       loop$="[[loop]]"
       current-time="{{currentTime:timeupdate}}"
@@ -65,6 +66,9 @@
           controls: {
             type: Boolean,
             value: false
+          },
+          src: {
+            type: String
           },
           /**
           * -1 – unstarted
@@ -167,7 +171,6 @@
           if(this.debug) {
             console.log('hook-video.BUFFERING');
           }
-          this._cancelTimeout();
           return true;
         }
         return false;
@@ -188,7 +191,6 @@
           }
           return true;
         }
-        this._cancelTimeout();
         return false;
       }
       computePaused() {
@@ -196,7 +198,6 @@
           if(this.debug) {
             console.log('hook-video.PAUSED');
           }
-          this._startTimeout();
           return true;
         }
         return false;
@@ -235,7 +236,6 @@
       _pauseChanged(e) {
         this.state = 2;
       }
-
 
       play() {
         this.$.video.play();
