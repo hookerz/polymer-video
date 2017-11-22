@@ -501,6 +501,9 @@
       }
 
       _updatePlaybackStats() {
+        if(!this.playerReady || !this.player || !this.player.getCurrentTime) {
+          return;
+        }
         this.currentTime = Math.round(this.player.getCurrentTime());
         this.fractionLoaded = this.player.getVideoLoadedFraction();
         this.volume = this.player.getVolume();
