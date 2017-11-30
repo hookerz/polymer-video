@@ -11,11 +11,20 @@
         height: 100%;
         @apply --hook-video;
       }
+      .video::-webkit-media-controls {
+        @apply --hook-video-media-controls;
+      }
+      .video::-webkit-media-controls-overlay-play-button {
+        @apply --hook-video-media-controls-overlay-play-button;
+      }
+      .video::-webkit-media-controls-start-playback-button {
+        @apply --hook-video-media-controls-start-playback-button;
+      }
     </style>
     <video class="video"
       id="video"
       autoplay$="[[autoplay]]"
-      controls$="[[controls]]" 
+      controls$="[[controls]]"
       muted$="[[muted]]"
       src$="[[src]]"
       playsinline$="[[playsinline]]"
