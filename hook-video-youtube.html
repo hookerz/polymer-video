@@ -620,7 +620,7 @@
         if(this.debug) {
           console.log('hook-video-youtube.pause()');
         }
-        if(this.player) {
+        if(this.player && this.playerReady) {
           this.player.pauseVideo();
           this._cancelTimeout();
         }
@@ -630,7 +630,7 @@
         if(this.debug) {
           console.log('hook-video-youtube.stop()');
         }
-        if(this.player && (this.playing || this.paused)) {
+        if(this.player && (this.playing || this.paused)  && this.playerReady) {
           this.player.stopVideo();
           this._cancelTimeout();
         }
@@ -640,7 +640,7 @@
         if(this.debug) {
           console.log('hook-video-youtube.mute()');
         }
-        if(this.player) {
+        if(this.player && this.playerReady) {
           this.player.mute();
         }
       }
@@ -649,7 +649,7 @@
         if(this.debug) {
           console.log('hook-video-youtube.unmute()');
         }
-        if(this.player) {
+        if(this.player && this.playerReady) {
           this.player.unmute();
         }
       }
@@ -673,7 +673,7 @@
         if(this.debug) {
           console.log('hook-video-youtube.seekTo()', seconds);
         }
-        if (this.player && this.player.seekTo) {
+        if (this.player && this.player.seekTo && this.playerReady) {
           this.player.seekTo(seconds, true);
           // Explicitly call _updatePlaybackStats() to ensure that the new playback info is
           // reflected in the bound attributes.
